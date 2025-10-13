@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     "crispy_bootstrap4",
     'users.apps.UsersConfig',
     'home.apps.HomeConfig',
-    'leaflet',
 ]
 
 MIDDLEWARE = [
@@ -145,11 +144,3 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASS')
-
-LEAFLET_CONFIG = {
-    'DEFAULT_CENTER': (51.5074, -0.1278),  # Example for London
-    'DEFAULT_ZOOM': 10,
-    'TILES': {
-        'osm': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    }
-}
