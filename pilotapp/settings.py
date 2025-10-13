@@ -38,6 +38,12 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.repl.co',
 ]
 
+# CSRF settings for Replit environment (works in iframes/proxies)
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+
 # Application definition
 
 INSTALLED_APPS = [
