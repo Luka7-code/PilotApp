@@ -23,12 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-&r#smf-k(1+2t^pjmf2m$^^bg$6mh+ms$c70t)e35d2kg_uwn&'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-&r#smf-k(1+2t^pjmf2m$^^bg$6mh+ms$c70t)e35d2kg_uwn&')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis',
     'crispy_forms',
     "crispy_bootstrap4",
     'users.apps.UsersConfig',
@@ -86,15 +85,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-    },
-    'geospatial': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'airplane_map',
-        'USER': 'postgres',
-        'PASSWORD': '24.L.08.h.7',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    },
+    }
 }
 
 
@@ -116,7 +107,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-GDAL_LIBRARY_PATH = os.path.join('L:\\Projects\\PilotApp\\.venv1\\Lib\\site-packages\\osgeo\\gdal304.dll')
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
