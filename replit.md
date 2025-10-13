@@ -86,6 +86,12 @@ See `requirements.txt` for full list:
   - Set ALLOWED_HOSTS environment variable with your production domain(s)
   - Ensure DEBUG=False for production
 
+## Known Issues
+- **Safari/iPad Login**: Safari on iOS blocks cookies in iframes due to privacy settings. To login on iPad:
+  - Click "Open in new tab" to view the app outside the iframe, OR
+  - Use Chrome/Firefox instead of Safari, OR
+  - Temporarily disable "Prevent Cross-Site Tracking" in Safari settings
+
 ## Notes
 - The original project used PostGIS for geospatial data, but this has been simplified to use SQLite with latitude/longitude fields
 - Leaflet.js is loaded from CDN rather than django-leaflet package
