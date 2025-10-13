@@ -64,8 +64,12 @@ airports.csv       # Airport data file
 - Production deployment uses Gunicorn WSGI server
 - All static assets (Leaflet, markers) served from CDN
 
-## Environment Variables
-- `SECRET_KEY`: Django secret key (has default for development)
+## Environment Variables (Required)
+- `SECRET_KEY`: Django secret key (REQUIRED - must be set for security)
+- `DEBUG`: Set to `True` for development, `False` for production (defaults to False if not set)
+- `ALLOWED_HOSTS`: Comma-separated list of allowed hostnames for production (e.g., `yourdomain.com,www.yourdomain.com`). In development with DEBUG=True, defaults to allow all hosts.
+
+## Optional Environment Variables
 - `EMAIL_USER`: Email for password reset functionality
 - `EMAIL_PASS`: Email password for SMTP
 
@@ -78,7 +82,9 @@ See `requirements.txt` for full list:
 
 ## Running the Application
 - **Development**: Workflow "Django Server" runs `python manage.py runserver 0.0.0.0:5000`
-- **Production**: Configured to use Gunicorn with autoscale deployment
+- **Production**: Configured for autoscale deployment using `gunicorn --bind=0.0.0.0:5000 --reuse-port pilotapp.wsgi:application`
+  - Set ALLOWED_HOSTS environment variable with your production domain(s)
+  - Ensure DEBUG=False for production
 
 ## Notes
 - The original project used PostGIS for geospatial data, but this has been simplified to use SQLite with latitude/longitude fields
