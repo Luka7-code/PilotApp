@@ -1,11 +1,11 @@
 {% extends 'main/homepage.html' %}
 {% block content %}
-    <div id="map" style="height: 500px; width: 100%;"></div>
+<div id="map" style="height: 500px; width: 100%;"></div>
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.1/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.1/leaflet.markercluster.js"></script>
 
-    <script>
+<script>
     console.log("Initializing Map...");
 
     var map = L.map('map').setView([0, 0], 2);  // Center map globally
@@ -15,10 +15,21 @@
     }).addTo(map);
 
     // Create a marker cluster group
-    var markers = L.markerClusterGroup();
+    var airportLayer = L.markerClusterGroup();
+
+    var overlays = {
+        "Airports": airportLayer
+    };
+
+    L.control.layers(null, overlays).addTo(map);
+
 
     // Function to load airports based on map bounds and zoom level
     function loadAirports() {
+        if (!map.hasLayer(airportLayer)) {
+            return; // Airports toggled off
+        }
+
         var bounds = map.getBounds();
         var southwest = bounds.getSouthWest();
         var northeast = bounds.getNorthEast();
@@ -32,34 +43,41 @@
                 'X-CSRFToken': '{{ csrf_token }}'
             },
             body: JSON.stringify({
-                southwest: { lat: southwest.lat, lng: southwest.lng },
-                northeast: { lat: northeast.lat, lng: northeast.lng },
+                southwest: {lat: southwest.lat, lng: southwest.lng},
+                northeast: {lat: northeast.lat, lng: northeast.lng},
                 zoom_level: zoomLevel  // Send zoom level to the server
             })
         })
-        .then(response => response.json())
-        .then(data => {
-            // Clear existing markers
-            markers.clearLayers();
+            .then(response => response.json())
+            .then(data => {
+                // Clear existing markers
+                airportLayer.clearLayers();
 
-            // Add new markers for the airports in the current bounds
-            data.forEach(airport => {
-                var marker = L.marker([airport.latitude, airport.longitude])
-                    .bindPopup("<b>" + airport.name + "</b><br>" + airport.icao_code);
-                markers.addLayer(marker);
+                // Add new markers for the airports in the current bounds
+                data.forEach(airport => {
+                    var marker = L.marker([airport.latitude, airport.longitude])
+                        .bindPopup("<b>" + airport.name + "</b><br>" + airport.icao_code);
+                    airportLayer.addLayer(marker);
+                });
+
+                // Add the markers to the map
+                map.addLayer(airportLayer);
             });
-
-            // Add the markers to the map
-            map.addLayer(markers);
-        });
     }
 
     // Trigger the loadAirports function when the map is moved, zoomed, or resized
     map.on('moveend', loadAirports);
     map.on('zoomend', loadAirports);  // Trigger on zoom end to adjust the loaded data
 
+    map.on('overlayadd', function (e) {
+        if (e.name === "Airports") {
+            loadAirports();
+        }
+    });
+
+
     // Initial load of airports
     loadAirports();
-    </script>
+</script>
 
 {% endblock %}
