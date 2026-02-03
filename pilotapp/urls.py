@@ -43,6 +43,7 @@ urlpatterns = [
          name='password_reset_complete'),
     path('', home_views.map_view, name='map'),
 path('get_airports_within_bounds/', home_views.get_airports_within_bounds, name='get_airports_within_bounds'),
+     path("weather/bulk/", views.weather_bulk, name="weather_bulk"),
 ]
 
 
