@@ -1,6 +1,10 @@
 {% extends 'main/homepage.html' %}
 {% block content %}
-<div id="map" style="height: 500px; width: 100%;"></div>
+<div class="collapse collapse-horizontal" id="moreinfo" style="position: absolute; z-index: 9999;left: 0px; height: calc(100% - 50px); top: 50px;">
+    <button id="close">X</button>
+    <div class="card card-body" id="AirportInfo" style="width: 700px ;height: 95%"></div>
+</div>
+<div id="map" style="height: calc(100% - 50px); width: 100%; position: absolute; top: 50px; left: 0;"></div>
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.1/leaflet.markercluster.js"></script>
@@ -8,7 +12,7 @@
 <script>
     console.log("Initializing Map...");
 
-    var map = L.map('map').setView([0, 0], 2);  // Center map globally
+    var map = L.map('map').setView([0, 0], 3);  // Center map globally
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -16,6 +20,7 @@
 
     // Create a Airport cluster group
     var airportLayer = L.markerClusterGroup();
+    map.addLayer(airportLayer);
 
     var overlays = {
         "Airports": airportLayer
@@ -55,19 +60,38 @@
 
                 // Add new markers for the airports in the current bounds
                 data.forEach(airport => {
-                    var marker = L.marker([airport.latitude, airport.longitude])
-                        .bindPopup("<b>" + airport.name + "</b><br>" + airport.icao_code);
+                    var marker = L.marker([airport.lat, airport.lon]);
+                    var popup = L.popup()
+                        .setContent(`
+                                       <b>${airport.name}</b><br>
+                                       ICAO: ${airport.icao}<br>
+                                       <button onclick="openAirport('${airport.icao}')">
+                                           More Info
+                                       </button>
+                                   `)
+                        .openOn(marker)
+                    marker.bindPopup(popup); 
+                    marker.on("click", displayMarkerMessage);
+
+                    function displayMarkerMessage(){
+                        popup.openOn(map);
+                    }
+        
                     airportLayer.addLayer(marker);
                 });
-
-                // Add the markers to the map
-                map.addLayer(airportLayer);
             });
     }
 
     // Trigger the loadAirports function when the map is moved, zoomed, or resized
-    map.on('moveend', loadAirports);
-    map.on('zoomend', loadAirports);  // Trigger on zoom end to adjust the loaded data
+    let reloadTimeout;
+
+    function scheduleReload() {
+        clearTimeout(reloadTimeout);
+        reloadTimeout = setTimeout(loadAirports, 300);
+    }
+
+    map.on('moveend', scheduleReload);
+    map.on('zoomend', scheduleReload);
 
     map.on('overlayadd', function (e) {
         if (e.name === "Airports") {
@@ -78,6 +102,84 @@
 
     // Initial load of airports
     loadAirports();
+
+    
+    const CollElm = document.getElementById("moreinfo");
+    const bcCollapse = new bootstrap.Collapse(CollElm, {toggle: false});
+    function openAirport(icao){
+        if (CollElm.classList.contains("show")) {
+            bcCollapse.hide();
+            setTimeout(function() {
+            bcCollapse.show();
+            },600)
+        }
+        
+        fetch('/get_airport_info/',{
+             method: 'POST',
+             headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+             },
+             body: JSON.stringify({
+                 icao: icao
+             })
+                                  })
+            .then(response => response.json())
+            .then(data => {
+                    const airport = data[0]
+
+                    document.getElementById("AirportInfo").innerHTML = `
+                    <h1>${airport.name}</h1>
+                    <p>${airport.icaoId}</p>
+                    <p>${airport.country}</p>
+                    <p>${airport.elev}</p>
+                    <p>${airport.lat}</p>
+                    <p>${airport.lon}</p>
+                    <p>${airport.freqs}</p>
+                ${airport.runways .map(r => `
+                <p>${r.id}</p>
+                <p>${r.alignment}</p>
+                `) .join('')} `
+
+    })
+        setTimeout(function() {
+            bcCollapse.show();
+        },300);
+    }
+    document.getElementById("close").addEventListener("click", () => {
+        bcCollapse.hide()
+    });
+
+    
+    let planeMarkers = {};
+    async function updatePlanes() {
+        const res = await fetch("/api/planes/");
+        const data = await res.json();
+
+        if (!data.states) return;
+
+        data.states.forEach(state => {
+            const icao = state[0];
+            const lat = state[6];
+            const lon = state[5];
+
+            if (lan === null || lon ===null) return;
+
+            //If marker exists, move it
+            if (planeMarkers[icao]) {
+                planeMarkers[icao].setLatLng([lat, lon]);
+            } else {
+                //Create new marker
+                const marker = L.marker([lat, lon]).addTo(map);
+                marker.bindPopup(`ICAO: ${icao}`);
+                planeMarkers[icao] = marker;
+            }
+        })
+    }
+
+    setInterval(updatePlanes, 5000);
+    updatePlanes();
+
 </script>
 
 {% endblock %}

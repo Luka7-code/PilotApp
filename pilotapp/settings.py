@@ -158,4 +158,17 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASS')
 
-CHECKWX_API_KEY = "528d58bc3cdf49e18ad8ce485650c323"
+DEBUG = True
+
+CELERY_BEAT_SCHEDULE = {
+    "poll_opensky_every_30s": {
+        "task": "home.tasks.fetch_opensky_states",
+        "schedule": 30.0,
+    },
+}
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
+
+OPENSKY_USERNAME = "luka_7"
+OPENSKY_PASSWORD = "24.L.08.h.7"
