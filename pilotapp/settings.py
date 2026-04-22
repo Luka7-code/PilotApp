@@ -9,8 +9,10 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-import os
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 from django.conf.global_settings import LOGIN_REDIRECT_URL, EMAIL_BACKEND, EMAIL_PORT, EMAIL_USE_TLS, EMAIL_HOST_USER, \
     MEDIA_ROOT
@@ -57,6 +59,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap4",
     'users.apps.UsersConfig',
     'home.apps.HomeConfig',
+    'livereload',
 ]
 
 MIDDLEWARE = [
@@ -67,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'livereload.middleware.LiveReloadScript',
 ]
 
 ROOT_URLCONF = 'pilotapp.urls'
@@ -158,7 +162,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASS')
 
-DEBUG = True
 
 CELERY_BEAT_SCHEDULE = {
     "poll_opensky_every_30s": {

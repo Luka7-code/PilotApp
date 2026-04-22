@@ -60,13 +60,11 @@ def poll_opensky():
     global opensky_cache
     while True:
         try:
-            print("Fetching OpenSky data...")
             res = requests.get(
                 "https://opensky-network.org/api/states/all",
                 timeout=30
             )
             opensky_cache = res.json()
-            print("Updates OpenSky cache")
         except Exception as e:
             print(f"Error fetching OpenSky data: {e}")
 
